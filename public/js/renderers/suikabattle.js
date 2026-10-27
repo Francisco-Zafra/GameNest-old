@@ -328,7 +328,7 @@
   }
 
   function esc(v) { return String(v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function fruitName(info) { return window.__ACTIVE_LANG === 'en' ? (info.nameEn || info.name) : info.name; }
+  function fruitName(info) { return window.__ACTIVE_LANG !== 'zh' ? (info.nameEn || info.name) : info.name; }
   // DOM fruit ball, same look as the canvas one; d = diameter in px
   function ballHtml(type, d, cls) {
     var info = FRUITS[type];
@@ -514,7 +514,7 @@
       if (infoBar) {
         var nextInfo = FRUITS[nextFruitType];
         infoBar.innerHTML = '<span>' + _t('sk_score_label') + '<b>' + (st.scores && st.scores[pi] || 0) + '</b></span>' +
-          '<span>' + _t('sk_next_label') + nextInfo.emoji + ' ' + (window.__ACTIVE_LANG === 'en' ? (nextInfo.nameEn || nextInfo.name) : nextInfo.name) + '</span>';
+          '<span>' + _t('sk_next_label') + nextInfo.emoji + ' ' + (window.__ACTIVE_LANG !== 'zh' ? (nextInfo.nameEn || nextInfo.name) : nextInfo.name) + '</span>';
       }
 
       // Opponent bar

@@ -15,7 +15,7 @@ function buildWordPool(options, lang) {
     ? options.categories
     : Object.keys(WORD_LIBRARY);
   const pool = [];
-  const useEn = lang === 'en';
+  const useEn = lang === 'en' || lang === 'es';
   for (const key of cats) {
     const cat = WORD_LIBRARY[key];
     if (!cat) continue;

@@ -29,7 +29,7 @@
   };
 
   function getLang() {
-    return (window.__ACTIVE_LANG === 'en') ? 'en' : 'zh';
+    return (window.__ACTIVE_LANG === 'zh') ? 'zh' : 'en';
   }
 
   function shipLabel(type) {

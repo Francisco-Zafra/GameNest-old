@@ -114,13 +114,13 @@
   };
 
   function getViewerLang() {
-    return (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) || 'zh';
+    return window.__ACTIVE_LANG || (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) || 'zh';
   }
   function pickCardText(card) {
-    return getViewerLang() === 'en' ? (card.textEn || card.text || '') : (card.text || '');
+    return getViewerLang() !== 'zh' ? (card.textEn || card.text || '') : (card.text || '');
   }
   function pickDeckName(card) {
-    return getViewerLang() === 'en' ? (card.deckNameEn || card.deckName || card.deck || '') : (card.deckName || card.deck || '');
+    return getViewerLang() !== 'zh' ? (card.deckNameEn || card.deckName || card.deck || '') : (card.deckName || card.deck || '');
   }
   function escapeHtml(str) {
     return String(str || '').replace(/[&<>"']/g, function(ch) {

@@ -1,6 +1,10 @@
 (function() {
   if (!window.__LANG) window.__LANG = {};
   window.__LANG.zh = {
+    language: '语言',
+    hero_local: '本地',
+    hero_eyebrow: 'LAN TABLETOP',
+    room_setup_label: '房间设置',
     'join': '加入',
     'create_room': '创建房间',
     'back_to_lobby': '← 返回大厅',
@@ -1293,6 +1297,7 @@
     var lang = window.__ACTIVE_LANG || 'zh';
     var pack = window.__LANG[lang];
     if (pack && pack[key] !== undefined) return pack[key];
+    if (lang !== 'zh' && window.__LANG.en && window.__LANG.en[key] !== undefined) return window.__LANG.en[key];
     if (window.__LANG.zh && window.__LANG.zh[key] !== undefined) return window.__LANG.zh[key];
     return key;
   };
@@ -1303,6 +1308,7 @@
     return String(s).replace(/%s/g, function() { return args[i++] !== undefined ? args[i - 1] : '%s'; });
   };
   window._switchLang = function(lang) {
+    if (['zh', 'en', 'es'].indexOf(lang) === -1) return;
     localStorage.setItem('lang', lang);
     window.__ACTIVE_LANG = lang;
     window.location.reload();

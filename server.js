@@ -14,9 +14,10 @@ const startupLogPath = path.join(__dirname, 'android-startup.log');
 const SERVER_LANGS = {
   zh: require('./lang/server-zh'),
   en: require('./lang/server-en'),
+  es: require('./lang/server-es'),
 };
-function serverT(room, key) {
-  const lang = (room && room._lang) || 'zh';
+function serverT(room, key, requestedLang) {
+  const lang = (room && room._lang) || requestedLang || 'zh';
   const pack = SERVER_LANGS[lang] || SERVER_LANGS.zh;
   return pack[key] || key;
 }
@@ -333,7 +334,7 @@ function createRoom(ws, gameType, lang) {
     readyPlayers: new Set(),   // Set of player indices that are ready
     options: {},               // Game-specific options (e.g. requireBreak)
   };
-  room.players.set(ws, { name: 'Player 1', index: 0, avatar: '😊', resumeToken: crypto.randomUUID(), disconnectedAt: null });
+  room.players.set(ws, { name: room._lang === 'es' ? 'Jugador 1' : 'Player 1', index: 0, avatar: '😊', resumeToken: crypto.randomUUID(), disconnectedAt: null });
   rooms.set(roomId, room);
   return { roomId, room };
 }
@@ -1004,12 +1005,12 @@ wss.on('connection', (ws) => {
     if (type === 'create_room') {
       const { game, lang } = data || {};
       if (!gameRegistry[game]) {
-        ws.send(JSON.stringify({ type: 'error', message: serverT(currentRoom, 'invalid_game_type') }));
+        ws.send(JSON.stringify({ type: 'error', message: serverT(currentRoom, 'invalid_game_type', lang) }));
         return;
       }
       const result = createRoom(ws, game, lang || 'zh');
       if (!result) {
-        ws.send(JSON.stringify({ type: 'error', message: serverT(currentRoom, 'create_room_failed') }));
+        ws.send(JSON.stringify({ type: 'error', message: serverT(currentRoom, 'create_room_failed', lang) }));
         return;
       }
       currentRoomId = result.roomId;
@@ -1136,7 +1137,7 @@ wss.on('connection', (ws) => {
       const { roomId, resumeToken, lang } = data || {};
       const room = rooms.get(roomId);
       if (!room) {
-        ws.send(JSON.stringify({ type: 'error', code: 'ROOM_NOT_FOUND', message: serverT(currentRoom, 'room_not_found') }));
+        ws.send(JSON.stringify({ type: 'error', code: 'ROOM_NOT_FOUND', message: serverT(currentRoom, 'room_not_found', lang) }));
         return;
       }
       if (lang && !room._lang) room._lang = lang;
@@ -1215,7 +1216,7 @@ wss.on('connection', (ws) => {
         ws.send(JSON.stringify({ type: 'error', message: serverT(currentRoom, 'room_full') }));
         return;
       }
-      room.players.set(ws, { name: `Player ${idx + 1}`, index: idx, avatar: '😊', resumeToken: crypto.randomUUID(), disconnectedAt: null });
+      room.players.set(ws, { name: `${room._lang === 'es' ? 'Jugador' : 'Player'} ${idx + 1}`, index: idx, avatar: '😊', resumeToken: crypto.randomUUID(), disconnectedAt: null });
       if (room.players.size === 1) room.hostWS = ws;
       currentRoomId = roomId;
       currentRoom = room;

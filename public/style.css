@@ -3213,3 +3213,15 @@ body.lobby-page {
   #gameStage .player-tag { padding: 4px 6px; }
   #gameStage .game-status { margin-bottom: 0; min-height: 0; font-size: 14px; line-height: 20px; }
 }
+
+
+/* Native language selector: fits both the mobile lobby and the room header. */
+.language-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.language-switch { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 5px 10px; color: var(--text); }
+.language-switch select { font: inherit; font-size: 14px; font-weight: 700; color: inherit; background: transparent; border: 0; max-width: 125px; min-height: 32px; cursor: pointer; }
+.language-switch select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 5px; }
+.game-topbar-tools { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+@media (max-width: 560px) {
+  .game-topbar { flex-wrap: wrap; gap: 10px; }
+  .game-topbar-tools { margin-left: auto; }
+}

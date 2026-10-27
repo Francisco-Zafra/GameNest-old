@@ -497,8 +497,11 @@
   ];
 
   function getLangPack() {
-    var lang = (window.__ACTIVE_LANG === 'en' && window.__LANG && window.__LANG.en && window.__LANG.en.catalog) ? 'en' : 'zh';
-    return window.__LANG && window.__LANG[lang] && window.__LANG[lang].catalog;
+    var lang = window.__ACTIVE_LANG || 'zh';
+    var packs = window.__LANG || {};
+    var selected = packs[lang] && packs[lang].catalog;
+    if (lang === 'zh') return selected;
+    return Object.assign({}, packs.en && packs.en.catalog, selected);
   }
 
   function withId(id) {

@@ -184,6 +184,8 @@
   function i18nStatic() {
     if (typeof _t !== 'function') return;
     var nd;
+    nd = document.querySelector('.waiting-headline-copy .eyebrow');
+    if (nd) nd.textContent = _t('room_setup_label');
     nd = document.getElementById('tutorialBtn');
     if (nd) nd.textContent = _t('view_rules');
     nd = document.querySelector('.qr-hint');

@@ -1,6 +1,10 @@
 (function() {
   if (!window.__LANG) window.__LANG = {};
   window.__LANG.en = {
+    language: 'Language',
+    hero_local: 'Local',
+    hero_eyebrow: 'LAN TABLETOP',
+    room_setup_label: 'ROOM SETUP',
     'join': 'Join',
     'create_room': 'Create Room',
     'back_to_lobby': '← Lobby',

@@ -26,7 +26,7 @@
     return (r * 0.299 + g * 0.587 + b * 0.114) > 156 ? '#2d2114' : '#fffdf7';
   }
   function nameOf(i) { return (window._players && window._players[i]) ? window._players[i].name : _t('mp_player') + ' ' + (i + 1); }
-  function spName(sp) { return (window.__ACTIVE_LANG === 'en' && sp && sp.nameEn) ? sp.nameEn : (sp ? sp.name : ''); }
+  function spName(sp) { return (window.__ACTIVE_LANG !== 'zh' && sp && sp.nameEn) ? sp.nameEn : (sp ? sp.name : ''); }
 
   // ---------- 布局 ----------
   function computeSize() {
