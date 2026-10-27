@@ -43,12 +43,21 @@ test('stealing a card or receiving an ambiguous hand update is not mistaken for 
   assert.equal(hand.findDraw(previous,s,0),null);
 });
 
-test('explosions and automatic defuses reveal a kitten only to the player who drew it', () => {
+test('explosions and automatic defuses are public but never reveal another private card', () => {
   for(const outcome of ['explode','defuse']) {
     const s=state(), mine=hand.snapshot(s,0),other=hand.snapshot(s,1);
     s.actionSeq=1;s.lastAction={player:0,type:outcome,seq:1};
     const result=hand.findDraw(mine,s,0);
     assert.equal(result.card.type,'explode'); assert.equal(result.outcome,outcome);
-    assert.equal(hand.findDraw(other,s,1),null);
+    assert.equal(result.player,0);
+    assert.deepEqual(hand.findDraw(other,s,1),result);
+  }
+});
+
+test('reconnecting while a kitten is being placed restores the bomb event for every seat', () => {
+  const s=state();s.phase='reinsert';s.actionSeq=3;s.pendingKitten={player:0};
+  for(const self of [0,1]) {
+    const result=hand.findDraw(null,s,self);
+    assert.equal(result.player,0);assert.equal(result.outcome,'defuse');assert.equal(result.card.type,'explode');
   }
 });

@@ -1,4 +1,4 @@
-// View-only hand ordering and private draw detection. Never changes server state.
+// View-only hand ordering, private card draws and public bomb detection.
 (function(root) {
   var order = ['attack', 'skip', 'future', 'shuffle', 'favor', 'steal', 'defuse', 'explode'];
   function sortHand(hand) {
@@ -14,11 +14,15 @@
   }
   function findDraw(previous, state, self) {
     var action = state.lastAction;
-    if (!previous || previous.self !== self || !action || action.player !== self || action.seq <= previous.seq) return null;
-    if (action.type === 'defuse' || action.type === 'explode') {
-      return { card: { type: 'explode', id: 'draw-explode-' + action.seq }, outcome: action.type, seq: action.seq };
+    // Reconnecting during placement must restore the mandatory choice.
+    if (!previous && state.phase === 'reinsert' && state.pendingKitten) {
+      return { card: {type:'explode',id:'pending-kitten'}, outcome:'defuse', seq:state.actionSeq || 0, player:state.pendingKitten.player };
     }
-    if (action.type !== 'draw') return null;
+    if (!previous || previous.self !== self || !action || action.seq <= previous.seq) return null;
+    if (action.type === 'defuse' || action.type === 'explode') {
+      return { card: { type: 'explode', id: 'draw-explode-' + action.seq }, outcome: action.type, seq: action.seq, player:action.player };
+    }
+    if (action.type !== 'draw' || action.player !== self) return null;
     var added = (state.hands[self] || []).filter(function(card) { return card && previous.ids.indexOf(card.id) === -1; });
     return added.length === 1 ? { card: added[0], outcome: 'hand', seq: action.seq } : null;
   }

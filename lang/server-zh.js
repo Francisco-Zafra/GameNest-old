@@ -134,6 +134,8 @@ module.exports = {
   'ek_card_not_in_hand': '手上没有这张牌',
   'ek_must_target_player': '必须指定目标玩家',
   'ek_target_out': '目标玩家已出局',
+  'ek_place_kitten_first': '请先选择爆炸猫放回的位置',
+  'ek_invalid_position': '请选择有效的牌堆位置',
 
   // Liar's Bar (lb_)
   'lb_you_are_out': '你已出局',

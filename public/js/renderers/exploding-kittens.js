@@ -1,4 +1,4 @@
-// Illustrated tabletop view. All decisions still use the existing game protocol.
+// Illustrated tabletop view with private draws and public, acknowledged bomb events.
 (function() {
   window.gameRenderers = window.gameRenderers || new Map();
   var TYPES = {
@@ -55,12 +55,13 @@
   function init(container) {
     if (ui) { cancelDrawReveal(); clearTimeout(ui.highlightTimer); }
     ui = { root: container, state: null, self: 0, selected: null, target: null, pending: false,
-      handSignature: '', lastSeq: -1, events: [], snapshot: null, reveal: null, justDrawn: null };
+      handSignature: '', lastSeq: -1, events: [], snapshot: null, reveal: null, revealQueue: [], justDrawn: null };
     container.innerHTML = '<section class="ek-table" id="ekTable" aria-label="Exploding Kittens">' +
       '<header class="ek-table-header"><div><p class="ek-eyebrow">' + esc(t('ek_table_kicker')) + '</p><h1>Exploding <span>Kittens</span><i aria-hidden="true">✹</i></h1></div>' +
       '<div class="ek-table-tools"><button type="button" class="ek-text-button" id="ekRules">' + esc(t('view_rules')) + ' <span aria-hidden="true">↗</span></button><button type="button" class="ek-reset-button" id="ekRestart" aria-label="' + esc(t('restart')) + '" title="' + esc(t('restart')) + '">↻</button></div></header>' +
       '<div class="ek-roster" id="ekOpps" aria-label="' + esc(t('ek_rivals')) + '"></div>' +
       '<div class="ek-turn-strip" id="ekTurnStrip" role="status"><span class="ek-turn-dot" aria-hidden="true"></span><div><strong id="ekStatus"></strong><p id="ekTurnHint"></p></div><span id="ekTurns" class="ek-turns"></span></div>' +
+      '<div class="ek-bomb-notice" id="ekBombNotice" role="status" hidden></div>' +
       '<div class="ek-mat"><div class="ek-mat-caption"><span>' + esc(t('ek_table_center')) + '</span><span id="ekSurvivors"></span></div>' +
         '<div class="ek-piles"><div class="ek-pile-group"><button type="button" class="ek-deck" id="ekDrawPile" aria-label="' + esc(t('ek_draw_action')) + '">' +
           '<span class="ek-deck-inner">' + art('back') + '<span class="ek-back-name">BOOM<br>CLUB</span></span><span class="ek-count-tag" id="ekDrawCount">0</span></button><span class="ek-pile-label">' + esc(t('ek_draw_pile')) + '</span></div>' +
@@ -78,7 +79,9 @@
       '<dialog class="ek-draw-reveal" id="ekDrawReveal" tabindex="-1" aria-labelledby="ekRevealName" aria-describedby="ekRevealNote">' +
         '<p class="ek-reveal-label" id="ekRevealLabel"></p><div class="ek-reveal-motion" id="ekRevealMotion"><div class="ek-reveal-flipper" id="ekRevealFlipper">' +
           '<div class="ek-reveal-back"><div class="ek-reveal-back-inner">' + art('back') + '<strong>BOOM CLUB</strong></div></div><div class="ek-reveal-front" id="ekRevealFace"></div></div></div>' +
-        '<div class="ek-reveal-caption"><h2 id="ekRevealName"></h2><p id="ekRevealNote"></p><button type="button" class="ek-primary" id="ekRevealContinue"></button></div></dialog></section>';
+        '<div class="ek-reveal-caption"><h2 id="ekRevealName"></h2><p id="ekRevealNote"></p>' +
+        '<div class="ek-placement" id="ekPlacement" hidden><label for="ekKittenPosition">' + esc(t('ek_place_title')) + '</label><select id="ekKittenPosition"></select><p>' + esc(t('ek_place_secret')) + '</p></div>' +
+        '<p id="ekRevealError" role="alert"></p><button type="button" class="ek-primary" id="ekRevealContinue"></button></div></dialog></section>';
     node('ekRules').addEventListener('click', function() { window.showGameTutorial('exploding-kittens'); });
     node('ekRestart').addEventListener('click', function() { if (window.doRestart) window.doRestart(); });
     node('ekClose').addEventListener('click', closeDetail);
@@ -87,7 +90,8 @@
     node('ekPlayBtn').addEventListener('click', playSelected);
     node('ekDrawBtn').addEventListener('click', draw);
     node('ekDrawPile').addEventListener('click', draw);
-    node('ekRevealContinue').addEventListener('click', finishDrawReveal);
+    node('ekRevealContinue').addEventListener('click', acknowledgeDrawReveal);
+    node('ekKittenPosition').addEventListener('change', refreshRevealControls);
     node('ekDrawReveal').addEventListener('cancel', function(event) { event.preventDefault(); finishDrawReveal(); });
     node('ekDrawReveal').addEventListener('click', function(event) { if (event.target === this) finishDrawReveal(); });
     node('ekDiscard').addEventListener('click', function() {
@@ -99,6 +103,7 @@
     window._gameErrorHandler = function(message) {
       if (!ui || !ui.root.isConnected || !ui.state) return;
       ui.pending = false; refreshActions(); refreshDetail();
+      if (ui.reveal) { ui.reveal.placementSent = false; refreshRevealControls(); node('ekRevealError').textContent = message; }
       node('ekStealMsg').textContent = message;
     };
   }
@@ -108,16 +113,20 @@
     if (ui.snapshot && ui.snapshot.seq > 0 && state.actionSeq === 0) {
       cancelDrawReveal();
       if (node('ekDetail').open) closeDetail();
-      ui.selected = null; ui.target = null; ui.events = []; ui.lastSeq = -1; ui.justDrawn = null;
+      ui.selected = null; ui.target = null; ui.events = []; ui.lastSeq = -1; ui.justDrawn = null; ui.revealQueue = [];
     }
-    var newDraw = !ui.reveal && window.EKHandState.findDraw(ui.snapshot, state, playerIndex);
+    var newDraw = window.EKHandState.findDraw(ui.snapshot, state, playerIndex);
     ui.state = state; ui.self = playerIndex; ui.pending = false;
     ui.snapshot = window.EKHandState.snapshot(state, playerIndex);
     if (ui.reveal && ui.reveal.outcome === 'hand' && !myHand().some(function(card) { return card && card.id === ui.reveal.card.id; })) cancelDrawReveal();
-    if (newDraw) ui.reveal = Object.assign({ owner: ui, animations: [], finishing: false, cancelled: false }, newDraw);
+    if (newDraw) ui.revealQueue.push(newDraw);
     renderOpponents(); renderPiles(); renderHand(); renderFuture(); renderStatus(); renderEvent(); refreshActions();
     if (node('ekDetail').open) refreshDetail();
-    if (newDraw) startDrawReveal(ui.reveal);
+    if (ui.reveal) {
+      refreshRevealControls();
+      if (ui.reveal.placementSent && !awaitingPlacement(ui.reveal)) finishDrawReveal(true);
+    }
+    nextDrawReveal();
   }
 
   function renderOpponents() {
@@ -206,6 +215,9 @@
 
   function renderEvent() {
     var action = ui.state.lastAction;
+    var bomb = node('ekBombNotice');
+    bomb.hidden = !action || ['defuse','explode','reinsert'].indexOf(action.type) === -1;
+    if (!bomb.hidden) bomb.textContent = '✹ ' + tf('ek_event_' + action.type, playerName(action.player));
     if (!action) { node('ekActionLog').textContent = t('ek_first_draw'); node('ekHistory').innerHTML = ''; return; }
     var who = playerName(action.player);
     var key = 'ek_event_' + action.type;
@@ -225,11 +237,18 @@
 
   function refreshActions() {
     var mine = myTurn(), ended = ui.state.winner != null;
-    node('ekDrawBtn').disabled = !mine || ui.pending || !!ui.reveal || !ui.state.deck.length;
+    var placing = ui.state.phase === 'reinsert';
+    node('ekDrawBtn').disabled = !mine || placing || ui.pending || !!ui.reveal || !ui.state.deck.length;
     node('ekDrawPile').disabled = node('ekDrawBtn').disabled;
     node('ekDrawBtn').textContent = ui.pending ? t('ek_play_pending') : ended ? t('ek_round_over') : !mine ? t('ek_wait_short') : t('ek_draw_action');
     node('ekCommandTitle').textContent = ended ? t('ek_round_over') : mine ? t(ui.state.phase === 'draw' ? 'ek_draw_required' : 'ek_play_or_draw') : t('ek_inspect_title');
     node('ekCommandHint').textContent = mine ? t('ek_end_note') : t('ek_inspect_hint');
+    if (placing) {
+      node('ekDrawBtn').textContent = t('ek_wait_short');
+      node('ekCommandTitle').textContent = mine ? t('ek_place_title') : t('ek_place_wait_title');
+      node('ekCommandHint').textContent = tf('ek_place_wait', playerName(ui.state.currentPlayer));
+      node('ekTurnHint').textContent = node('ekCommandHint').textContent;
+    }
   }
 
   function openDetail() {
@@ -263,7 +282,7 @@
       ui.state.phase !== 'play' ? t('ek_draw_required') : meta.target && !valid.length ? t('ek_no_target') : meta.target && ui.target === null ? t('ek_select_target') : t('ek_confirm_hint');
   }
   function send(move) {
-    if (!myTurn() || ui.pending || ui.reveal) return;
+    if (!myTurn() || ui.pending || ui.reveal || ui.state.phase === 'reinsert') return;
     ui.pending = true; refreshActions();
     if (node('ekDetail').open) closeDetail();
     window.makeGameMove(move);
@@ -282,6 +301,50 @@
 
   function activeReveal(reveal) {
     return ui === reveal.owner && ui.reveal === reveal && !reveal.cancelled && ui.root.isConnected;
+  }
+  function nextDrawReveal() {
+    if (ui.reveal || !ui.revealQueue.length) return;
+    var item = ui.revealQueue.shift();
+    // A stolen card may disappear while a preceding public event is being read.
+    if (item.outcome === 'hand' && !myHand().some(function(card) { return card && card.id === item.card.id; })) return nextDrawReveal();
+    ui.reveal = Object.assign({owner:ui, animations:[], finishing:false, cancelled:false}, item);
+    renderHand(); refreshActions(); startDrawReveal(ui.reveal);
+  }
+  function awaitingPlacement(reveal) {
+    return reveal.outcome === 'defuse' && reveal.player === ui.self && ui.state.phase === 'reinsert' &&
+      ui.state.pendingKitten && ui.state.pendingKitten.player === ui.self;
+  }
+  function refreshRevealControls() {
+    var reveal = ui.reveal;
+    if (!reveal) return;
+    var placing = awaitingPlacement(reveal), select = node('ekKittenPosition');
+    node('ekPlacement').hidden = !placing;
+    if (placing && select.dataset.size !== String(ui.state.deck.length)) {
+      select.innerHTML = '<option value="">' + esc(t('ek_place_choose')) + '</option>' + Array.from({length:ui.state.deck.length + 1}, function(_, depth) {
+        var label = depth === 0 ? t('ek_place_top') : depth === ui.state.deck.length ? t('ek_place_bottom') : tf('ek_place_depth', depth + 1);
+        return '<option value="' + depth + '">' + esc(label) + '</option>';
+      }).join('');
+      select.dataset.size = String(ui.state.deck.length);
+    }
+    if (reveal.outcome !== 'hand') {
+      node('ekRevealLabel').textContent = tf('ek_bomb_drawn', playerName(reveal.player));
+      node('ekRevealNote').textContent = reveal.outcome === 'explode' ? tf('ek_bomb_out', playerName(reveal.player)) :
+        placing ? t('ek_place_explanation') : ui.state.phase === 'reinsert' && ui.state.pendingKitten && ui.state.pendingKitten.player === reveal.player ? tf('ek_bomb_saved_wait', playerName(reveal.player)) : tf('ek_bomb_saved', playerName(reveal.player));
+    }
+    select.disabled = !!ui.pending || !!reveal.placementSent;
+    node('ekRevealContinue').disabled = !!ui.pending || !!reveal.placementSent || (placing && select.value === '');
+    node('ekRevealContinue').textContent = ui.pending ? t('ek_play_pending') : placing ? t('ek_place_confirm') : t(reveal.outcome === 'hand' ? 'ek_to_hand' : 'ek_reveal_continue');
+  }
+  function acknowledgeDrawReveal() {
+    var reveal = ui.reveal;
+    if (!reveal || ui.pending || reveal.finishing) return;
+    if (awaitingPlacement(reveal)) {
+      var value = node('ekKittenPosition').value;
+      if (value === '') return;
+      ui.pending = true; reveal.placementSent = true;
+      node('ekRevealError').textContent = ''; refreshRevealControls(); refreshActions();
+      window.makeGameMove({reinsert:true, position:Number(value)});
+    } else finishDrawReveal(true);
   }
   function cancelDrawReveal() {
     var reveal = ui && ui.reveal;
@@ -310,7 +373,9 @@
     node('ekRevealLabel').textContent = t('ek_draw_reveal_label');
     node('ekRevealName').textContent = cardName(reveal.card.type);
     node('ekRevealNote').textContent = t('ek_draw_reveal_' + reveal.outcome);
-    node('ekRevealContinue').textContent = t(reveal.outcome === 'hand' ? 'ek_to_hand' : 'ek_reveal_continue');
+    node('ekRevealError').textContent = '';
+    node('ekKittenPosition').dataset.size = '';
+    refreshRevealControls();
     reveal.dialog.classList.remove('is-revealed', 'is-landing');
     reveal.dialog.dataset.outcome = reveal.outcome;
     reveal.dialog.dataset.phase = 'lift';
@@ -325,11 +390,13 @@
     } else flipper.style.transform = 'rotateY(180deg)';
     if (!activeReveal(reveal) || reveal.finishing) return;
     reveal.dialog.classList.add('is-revealed'); reveal.dialog.dataset.phase = 'face';
-    reveal.timer = setTimeout(function() { if (activeReveal(reveal)) finishDrawReveal(); }, 1600);
+    if (reveal.outcome === 'hand') reveal.timer = setTimeout(function() { if (activeReveal(reveal)) finishDrawReveal(); }, 1600);
   }
-  async function finishDrawReveal() {
+  async function finishDrawReveal(confirmed) {
     var reveal = ui && ui.reveal;
     if (!reveal || reveal.finishing || !activeReveal(reveal)) return;
+    if (reveal.outcome !== 'hand' && confirmed !== true) return;
+    if (awaitingPlacement(reveal)) return;
     reveal.finishing = true; clearTimeout(reveal.timer);
     reveal.animations.forEach(function(animation) { animation.cancel(); });
     var motion = node('ekRevealMotion'), flipper = node('ekRevealFlipper');
@@ -343,7 +410,7 @@
         var bottom = destination.getBoundingClientRect().bottom;
         if (bottom > window.innerHeight - 110) window.scrollBy({top:bottom - window.innerHeight + 110,behavior:'instant'});
       }
-    } else if (reveal.outcome === 'defuse') destination = node('ekDrawPile');
+    } else if (reveal.outcome === 'defuse' && reveal.player === ui.self) destination = node('ekDrawPile');
     if (!reveal.reduced && destination) {
       var source = motion.getBoundingClientRect(), target = destination.getBoundingClientRect();
       if (reveal.outcome === 'defuse') flipper.style.transform = 'rotateY(0deg)';
@@ -361,6 +428,7 @@
       clearTimeout(ui.highlightTimer);
       ui.highlightTimer = setTimeout(function() { if (ui === owner && owner.root.isConnected) { ui.justDrawn = null; renderHand(); } }, 2200);
     }
+    nextDrawReveal();
   }
 
   window.gameRenderers.set('exploding-kittens', { init: init, render: render });

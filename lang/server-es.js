@@ -33,5 +33,7 @@ module.exports = Object.assign({}, require('./server-en'), {
   ek_deck_empty: 'El mazo está vacío',
   ek_card_not_in_hand: 'Esa carta no está en tu mano',
   ek_must_target_player: 'Debes elegir un jugador',
-  ek_target_out: 'Ese jugador está eliminado'
+  ek_target_out: 'Ese jugador está eliminado',
+  ek_place_kitten_first: 'Primero elige dónde devolver el gatito al mazo',
+  ek_invalid_position: 'Elige una posición válida del mazo'
 });

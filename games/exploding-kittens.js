@@ -1,6 +1,5 @@
 // games/exploding-kittens.js
 // 爆炸猫 — Russian roulette card game. Avoid drawing Exploding Kittens!
-const { pick } = require('./lib/i18n');
 
 exports.name = 'exploding-kittens';
 exports.maxPlayers = 6;
@@ -48,7 +47,8 @@ exports.createState = () => ({
   alive: [],          // per-player: bool
   extraTurns: [],     // per-player: remaining extra turns
   futureCards: null,  // result of See the Future (visible only to current player)
-  phase: 'play',      // 'play' | 'draw' | 'over'
+  phase: 'play',      // 'play' | 'draw' | 'reinsert' | 'over'
+  pendingKitten: null, // { player, card } while a survivor privately chooses a position
   peekedCards: null,  // cards seen by current player via Future
   lastSteal: null,    // { stealer, victim, cardType } — shown as notification then cleared
   lastAction: null,   // { player, type, seq, target? } — public play/explosion log
@@ -95,6 +95,7 @@ function initGame(state, playerCount) {
   state.futureCards = null;
   state.peekedCards = null;
   state.phase = 'play';
+  state.pendingKitten = null;
   state.lastSteal = null;
   state.lastAction = null;
   state.actionSeq = 0;
@@ -114,6 +115,28 @@ function aliveCount(state) {
   return state.alive.filter(a => a).length;
 }
 
+function finishDraw(state, playerIndex) {
+  state.phase = 'play';
+  state.peekedCards = null;
+  state.futureCards = null;
+  state.lastSteal = null;
+  if (state.extraTurns[playerIndex] > 0) state.extraTurns[playerIndex]--;
+  else state.currentPlayer = nextAlive(state, playerIndex);
+}
+
+exports.getCurrentActor = state => state.currentPlayer;
+// Called by the server only when skipping a seat after its reconnect grace.
+// An abandoned choice must not leave an orphaned kitten or block the room.
+exports.setCurrentActor = (state, candidate) => {
+  if (state.phase === 'reinsert' && state.pendingKitten) {
+    state.deck.splice(Math.floor(Math.random() * (state.deck.length + 1)), 0, state.pendingKitten.card);
+    setAction(state, state.pendingKitten.player, 'reinsert');
+    finishDraw(state, state.pendingKitten.player);
+    state.pendingKitten = null;
+  }
+  state.currentPlayer = candidate;
+};
+
 exports.handleMove = (data, state, playerIndex) => {
   if (state.winner !== null) return 'g_game_over';
   if (!state.alive[playerIndex]) return 'ek_you_are_out';
@@ -130,6 +153,20 @@ exports.handleMove = (data, state, playerIndex) => {
 
   if (playerIndex !== state.currentPlayer) return 'g_not_your_turn';
 
+  // Position is a depth from the top: 0 = next draw, deck.length = bottom.
+  // Reject every other move until the surviving player has placed the kitten.
+  if (state.phase === 'reinsert') {
+    if (!data || data.reinsert !== true || !state.pendingKitten || state.pendingKitten.player !== playerIndex) return 'ek_place_kitten_first';
+    if (!Number.isInteger(data.position) || data.position < 0 || data.position > state.deck.length) return 'ek_invalid_position';
+    state.deck.splice(state.deck.length - data.position, 0, state.pendingKitten.card);
+    state.pendingKitten = null;
+    // The chosen depth must never appear in the public action or subsequent views.
+    setAction(state, playerIndex, 'reinsert');
+    finishDraw(state, playerIndex);
+    return null;
+  }
+  if (data && data.reinsert) return 'g_invalid_action';
+
   // "Draw" straight from the play phase: skip playing and end the turn in one click
   if (state.phase === 'play' && data && data.draw && !cardId) state.phase = 'draw';
 
@@ -142,20 +179,15 @@ exports.handleMove = (data, state, playerIndex) => {
       // Check for defuse
       const defuseIdx = hand.findIndex(c => c.type === 'defuse');
       if (defuseIdx >= 0) {
-        // Defuse! Remove defuse, place explode back secretly
-        hand.splice(defuseIdx, 1);
-        state.discard.push({ type: 'defuse', id: 'defuse-used' });
-        // Let player choose where to put explode back
-        if (state.deck.length === 0) {
-          state.deck.push(card); // only position available
-        } else if (data.position !== undefined) {
-          state.deck.splice(Math.min(data.position, state.deck.length), 0, card);
-        } else {
-          state.deck.splice(Math.floor(Math.random() * (state.deck.length + 1)), 0, card);
-        }
+        state.discard.push(hand.splice(defuseIdx, 1)[0]);
+        state.pendingKitten = { player: playerIndex, card };
+        state.phase = 'reinsert';
         state.peekedCards = null;
+        state.futureCards = null;
+        state.lastSteal = null;
         // Public: player used a defuse to survive
         setAction(state, playerIndex, 'defuse', { defused: true });
+        return null;
       } else {
         // BOOM! Eliminated
         state.alive[playerIndex] = false;
@@ -180,17 +212,7 @@ exports.handleMove = (data, state, playerIndex) => {
       setAction(state, playerIndex, 'draw');
     }
 
-    state.phase = 'play';
-    state.peekedCards = null;
-    state.lastSteal = null;
-
-    // Check extra turns
-    if (state.extraTurns[playerIndex] > 0) {
-      state.extraTurns[playerIndex]--;
-      state.phase = 'play';
-    } else {
-      state.currentPlayer = nextAlive(state, playerIndex);
-    }
+    finishDraw(state, playerIndex);
     return null;
   }
 
@@ -304,6 +326,7 @@ exports.handleMove = (data, state, playerIndex) => {
 const { maskView } = require('./lib/hidden');
 exports.playerView = function (state, playerIndex) {
   const view = maskView(state, playerIndex, { piles: ['deck'] });
+  if (view !== state && state.pendingKitten) view.pendingKitten = { player: state.pendingKitten.player };
   if (view !== state && state.currentPlayer !== playerIndex) {
     view.peekedCards = null;
     view.futureCards = null;

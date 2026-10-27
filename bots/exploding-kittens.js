@@ -6,6 +6,9 @@ exports.name = 'exploding-kittens';
 exports.createBot = (playerIndex) => ({
   name: botName(playerIndex, 'zh'),
   getMove(state) {
+    if (state.phase === 'reinsert') {
+      return { reinsert: true, position: Math.floor(Math.random() * (state.deck.length + 1)) };
+    }
     const hand = state.hands[playerIndex];
     if (!hand || hand.length === 0) return {};
 

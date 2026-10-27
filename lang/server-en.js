@@ -134,6 +134,8 @@ module.exports = {
   'ek_card_not_in_hand': 'Card not in hand',
   'ek_must_target_player': 'Must target a player',
   'ek_target_out': 'Target is out',
+  'ek_place_kitten_first': 'Choose where to return the kitten first',
+  'ek_invalid_position': 'Choose a valid position in the deck',
 
   // Liar's Bar (lb_)
   'lb_you_are_out': 'You are out',

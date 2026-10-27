@@ -1,11 +1,14 @@
 # Mesa ilustrada de Exploding Kittens
 
-La interfaz utiliza las reglas y los mensajes de red existentes. No añade Nope, combinaciones de gatos ni otras reglas del juego comercial.
+La mesa conserva las acciones de cartas de la variante y añade una fase de devolución secreta después de desactivar un gatito. No incluye Nope ni combinaciones de gatos.
 
 ## Interacciones
 
 - La mano se agrupa por tipo (Ataque, Pasar, Ver el futuro, Barajar, Favor, Robo y Desactivar) sin modificar el estado del servidor. Se desplaza horizontalmente y conserva su posición al actualizarse el turno.
-- Al robar, solo quien roba ve la carta salir del mazo, girarse, ampliarse y entrar en su grupo de la mano. Puede continuar antes de que termine la pausa automática. Los gatitos explosivos muestran el resultado de la defensa o eliminación. La animación no se repite al entrar o reconectar y respeta el movimiento reducido.
+- Al robar una carta normal, solo quien roba la ve salir del mazo, girarse, ampliarse y entrar en su grupo de la mano. Puede continuar antes de que termine la pausa automática. La animación no se repite al entrar o reconectar y respeta el movimiento reducido.
+- Los gatitos explosivos se muestran a todos con el nombre del jugador y el resultado de su defensa o eliminación. No se cierran solos, con Escape ni al tocar el fondo: cada jugador debe pulsar el botón. Los sucesos consecutivos se encolan para poder leerlos todos. La mesa conserva además un aviso destacado de la última bomba y de su devolución.
+- Quien usa Desactivar elige una posición del mazo en privado y confirma: arriba significa la próxima carta, abajo la última, y puede elegir cualquier posición intermedia. El servidor retiene el gatito fuera del mazo y mantiene el turno pendiente hasta una colocación válida; nunca publica la posición. Sin Desactivar, el jugador queda eliminado y la bomba se descarta.
+- Una reconexión durante esa elección restaura el selector. Los bots también colocan las bombas, incluso sin cartas en la mano. Si se abandona la sala y el servidor salta el asiento tras su plazo de reconexión, devuelve el gatito al azar para evitar bloquear la partida.
 - Tocar una carta abre su efecto; la carta solo se juega tras confirmar.
 - Ataque, Favor y Robo muestran los rivales válidos. Los jugadores eliminados o sin cartas no se pueden elegir para robar.
 - Desactivar se identifica como protección automática y no se puede malgastar mediante el botón de jugar.
@@ -38,4 +41,6 @@ Además de las comprobaciones del proyecto (`npm run check` y `npm test`), se pr
 
 Estas pruebas se ejecutaron en Chrome de escritorio emulando tamaños de móvil; el comportamiento táctil y la autonomía finales deben comprobarse en el dispositivo Android.
 
-Para el robo animado se añadieron seis pruebas unitarias de agrupación, detección privada y reconexión. Se verificaron además el giro y la llegada automática a la mano, continuar/Escape, el bloqueo de acciones durante el robo, la privacidad con tres clientes reales, desactivación y eliminación, limpieza al reiniciar o perder la carta, y movimiento reducido. Resultado del proyecto: 385 pruebas aprobadas y 2 omitidas; comprobación de sintaxis de 192 archivos JavaScript.
+Las pruebas de la mano cubren agrupación, detección privada de cartas normales, bombas públicas y reconexión. Las pruebas del motor cubren todas las posiciones de devolución, validación sin cambios de estado, privacidad, turnos extra, última carta, eliminación, bots, reinicio y abandono de la elección.
+
+También se verificaron el giro y la llegada automática de cartas normales, la confirmación obligatoria de bombas, errores y reintentos, sucesos en cola y restauración del selector al reconectar. Se probaron tres vistas de jugador independientes conectadas al motor y una partida con tres clientes reales del servidor. Se revisaron tamaños desde 320 píxeles de ancho, controles accesibles a 400 píxeles de alto y movimiento reducido.
