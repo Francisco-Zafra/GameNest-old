@@ -810,9 +810,8 @@
   };
 
   function getTutorials() {
-    if (window.__ACTIVE_LANG === 'zh') return TUTORIALS_ZH;
     var pack = window.__LANG && window.__LANG[window.__ACTIVE_LANG];
-    return Object.assign({}, TUTORIALS_EN, pack && pack.tutorials);
+    return Object.assign({}, window.__ACTIVE_LANG === 'zh' ? TUTORIALS_ZH : TUTORIALS_EN, pack && pack.tutorials);
   }
 
   // ---- Tutorial overlay ----

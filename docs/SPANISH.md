@@ -4,10 +4,11 @@ Esta rama añade español como tercer idioma, conservando inglés y chino.
 
 ## Qué está traducido
 
-- Catálogo de los 34 juegos actuales: títulos, descripciones, categorías y etiquetas.
+- Catálogo de los 35 juegos actuales: títulos, descripciones, categorías y etiquetas.
 - Navegación, búsqueda, creación de salas, asientos, botones y estados compartidos.
 - Ajustes comunes y mensajes de error generales del servidor.
 - UNO: interfaz, colores, avisos, errores y reglas de esta implementación.
+- Schotten Totten: versión clásica para dos, interfaz móvil, clanes ilustrados propios, reclamaciones, reglas y mensajes en español. Consulta `docs/SCHOTTEN_TOTTEN.md`.
 - Exploding Kittens: mesa ilustrada, cartas con sus efectos, selección de objetivos, mensajes y reglas de esta variante.
 
 El selector de idioma está en el catálogo y en la cabecera de las salas. La elección se guarda en el navegador. Si no hay una elección guardada, los navegadores configurados en español lo seleccionan automáticamente.

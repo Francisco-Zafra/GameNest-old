@@ -1,8 +1,8 @@
 # GameNest
 
-> This personal fork adds a Spanish interface, UNO translation, and an original illustrated Exploding Kittens table while preserving English and Chinese. See [Spanish coverage and updates](docs/SPANISH.md) for the current scope.
+> This personal fork adds Spanish, an original illustrated Exploding Kittens table, and classic Schotten Totten for two players with mobile controls and original clan artwork. English and Chinese remain available. See [Spanish coverage and updates](docs/SPANISH.md) for the current scope.
 
-> 34 LAN games you can play with friends without internet: board, card, mahjong, party, puzzle, and real-time. One phone or PC hosts (a hotspot is enough), everyone else scans a QR code and plays in the browser. No data plan, no app install.
+> 35 LAN games you can play with friends without internet: board, card, mahjong, party, puzzle, and real-time. One phone or PC hosts (a hotspot is enough), everyone else scans a QR code and plays in the browser. No data plan, no app install.
 
 **[🚀 Live Demo](https://gamenest-4kww.onrender.com) — try it without installing.**
 
@@ -11,7 +11,7 @@
 [![Android APK](https://github.com/absswds/GameNest/actions/workflows/android-apk.yml/badge.svg)](https://github.com/absswds/GameNest/actions/workflows/android-apk.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-43853d.svg)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.x-lightgrey.svg)](https://expressjs.com/)
-[![Games](https://img.shields.io/badge/Games-34-blue.svg)](#game-catalog)
+[![Games](https://img.shields.io/badge/Games-35-blue.svg)](#game-catalog)
 [![No account](https://img.shields.io/badge/Account-Not_Required-green.svg)](#highlights)
 [![Offline](https://img.shields.io/badge/Network-LAN/Offline-orange.svg)](#highlights)
 [![Android](https://img.shields.io/badge/Host-Android_✓-brightgreen.svg)](#android-host)
@@ -30,7 +30,7 @@ Since then it has become our go-to for dorm nights, parties, family evenings, an
 
 - **Works offline**: planes, trains, campsites, basements. One phone hotspot or one shared WiFi is enough; no internet is needed at any point.
 - **Only the host installs anything**: an Android phone, a Windows PC (standalone exe), or any machine with Node.js can host. Everyone else scans a QR code or types a room code and plays in the browser.
-- **34 games**: board games, poker, mahjong, party games, deduction, social deduction, puzzle races, and real-time battles, for 2 players up to a whole group.
+- **35 games**: board games, poker, mahjong, party games, deduction, social deduction, puzzle races, and real-time battles, for 2 players up to a whole group.
 - **Bots fill empty seats**: most turn-based games have AI players, so you can also practise alone.
 - **Reconnect and resume**: drop out or leave by accident and the lobby's resume card puts you back in your seat.
 - **Hidden info stays hidden**: hands and roles are only sent to their owner, so nobody can peek at the network traffic.
@@ -93,7 +93,7 @@ If port `3000` is busy, the server automatically tries the next free port and pr
 | Category | Games |
 | --- | --- |
 | Board Games | Tic-Tac-Toe, Gomoku, Chinese Chess, Chess, Checkers, Connect Four, Reversi, Go 9x9, Battleship |
-| Cards & Tiles | Texas Hold'em, Dou Dizhu, Davinci Code, Rummikub, Liar's Bar, Big Two, Mahjong (Sichuan & Cantonese), Hearts, Three Kingdoms Showdown |
+| Cards & Tiles | Schotten Totten, Texas Hold'em, Dou Dizhu, Davinci Code, Rummikub, Liar's Bar, Big Two, Mahjong (Sichuan & Cantonese), Hearts, Three Kingdoms Showdown |
 | Party | Monopoly, Flight Chess, Draw & Guess, UNO, Number Bomb, Old Maid, Exploding Kittens, Truth or Dare, Werewolf |
 | Puzzle | Sheep Tile, 24 Game, Sudoku, 2048, Minesweeper Race |
 | Real-time | Suika Battle, Snake Battle |

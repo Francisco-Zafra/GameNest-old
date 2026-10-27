@@ -1,5 +1,6 @@
 (function() {
   var entries = {
+    'schotten-totten': ['Schotten Totten', 'Nueve piedras. Una frontera.', 'Forma tus clanes y conquista la frontera en este duelo clásico para dos, sin tácticas.', 'Cartas y fichas', ['Estrategia', 'Duelo']],
     tictactoe: ['Tres en raya', 'Tres fichas en línea', 'Una partida rápida para dos, perfecta para empezar.', 'Tablero', ['Rápido', 'Para empezar']],
     gomoku: ['Gomoku', 'Cinco en raya en un tablero de 15 × 15', 'Coloca tus fichas y prepara una línea de cinco antes que tu rival.', 'Tablero', ['Estrategia', 'Duelo']],
     davinci: ['Código Da Vinci', 'Deduce los números ocultos', 'Adivina los números de las fichas de tus rivales a partir de sus colores y posiciones.', 'Cartas y fichas', ['Deducción', 'Faroles']],

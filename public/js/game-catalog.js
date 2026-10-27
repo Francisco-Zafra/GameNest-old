@@ -27,6 +27,10 @@
       supportsAI: true,
       maxPlayers: 2,
     },
+    'schotten-totten': {
+      name: '苏格兰对决', icon: '🪨', cover: '/assets/schotten-totten/cover.png', subtitle: '争夺九块边界石', description: '两人经典模式，用三张牌组成强大阵型。',
+      players: '2人', duration: '约20分钟', category: '牌桌竞技', tags: ['策略','对决'], featured: false, supportsAI: true, maxPlayers: 2,
+    },
     davinci: {
       name: '达芬奇密码',
       icon: '🧠',
@@ -467,6 +471,7 @@
     'drawguess',
     'texas',
     'uno',
+    'schotten-totten',
     'doudizhu',
     'davinci',
     'rummikub',

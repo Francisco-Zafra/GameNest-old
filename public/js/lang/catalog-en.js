@@ -20,6 +20,7 @@
       category: 'Board Games',
       tags: ['Strategy', 'Duel'],
     },
+    'schotten-totten': { name: 'Schotten Totten', subtitle: 'Nine stones. One border.', description: 'A classic duel of clans: build formations and claim the border. No tactics.', players: '2 Players', duration: '~20 min', category: 'Cards & Tiles', tags: ['Strategy', 'Duel'] },
     davinci: {
       name: 'Davinci Code',
       subtitle: 'Deduce and bluff your way through',

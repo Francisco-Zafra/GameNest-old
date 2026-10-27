@@ -20,6 +20,7 @@
       category: '棋盘对弈',
       tags: ['策略', '对弈'],
     },
+    'schotten-totten': { name: '苏格兰对决', subtitle: '九块石头，一条边界', description: '用氏族卡牌组成阵型，争夺边界的经典双人模式，不含战术牌。', players: '2人', duration: '约20分钟', category: '牌桌竞技', tags: ['策略','对决'] },
     davinci: {
       name: '达芬奇密码',
       subtitle: '推理猜牌，步步试探',

@@ -136,6 +136,14 @@ module.exports = {
   'ek_target_out': '目标玩家已出局',
   'ek_place_kitten_first': '请先选择爆炸猫放回的位置',
   'ek_invalid_position': '请选择有效的牌堆位置',
+  'st_choose_claim': '选择要夺取的石头或结束回合',
+  'st_cannot_claim': '尚未证明可以夺取这块石头',
+  'st_must_play': '有可用位置时必须出牌',
+  'st_choose_card': '选择一张手牌',
+  'st_card_not_in_hand': '这张牌不在你的手中',
+  'st_choose_stone': '选择第 1 至 9 块石头',
+  'st_stone_claimed': '这块石头已经被夺取',
+  'st_stone_full': '该石头一侧已有三张牌',
 
   // Liar's Bar (lb_)
   'lb_you_are_out': '你已出局',

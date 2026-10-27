@@ -136,6 +136,14 @@ module.exports = {
   'ek_target_out': 'Target is out',
   'ek_place_kitten_first': 'Choose where to return the kitten first',
   'ek_invalid_position': 'Choose a valid position in the deck',
+  'st_choose_claim': 'Choose a stone to claim or finish your turn',
+  'st_cannot_claim': 'That stone is not proven yours yet',
+  'st_must_play': 'Play a card while you have an available position',
+  'st_choose_card': 'Choose a card from your hand',
+  'st_card_not_in_hand': 'That card is not in your hand',
+  'st_choose_stone': 'Choose a stone from 1 to 9',
+  'st_stone_claimed': 'That stone has already been claimed',
+  'st_stone_full': 'You already have three cards at that stone',
 
   // Liar's Bar (lb_)
   'lb_you_are_out': 'You are out',

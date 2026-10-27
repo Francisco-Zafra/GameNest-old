@@ -35,5 +35,13 @@ module.exports = Object.assign({}, require('./server-en'), {
   ek_must_target_player: 'Debes elegir un jugador',
   ek_target_out: 'Ese jugador está eliminado',
   ek_place_kitten_first: 'Primero elige dónde devolver el gatito al mazo',
-  ek_invalid_position: 'Elige una posición válida del mazo'
+  ek_invalid_position: 'Elige una posición válida del mazo',
+  st_choose_claim: 'Elige una piedra para reclamar o termina el turno',
+  st_cannot_claim: 'Todavía no puedes demostrar que esa piedra es tuya',
+  st_must_play: 'Debes colocar una carta mientras tengas un lugar disponible',
+  st_choose_card: 'Elige una carta de tu mano',
+  st_card_not_in_hand: 'Esa carta no está en tu mano',
+  st_choose_stone: 'Elige una piedra del 1 al 9',
+  st_stone_claimed: 'Esa piedra ya tiene dueño',
+  st_stone_full: 'Ya tienes tres cartas en esa piedra'
 });
