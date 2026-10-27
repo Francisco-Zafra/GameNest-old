@@ -30,7 +30,7 @@
   function myTurn() {
     return ui.state && ui.state.winner == null && ui.state.alive[ui.self] && ui.state.currentPlayer === ui.self;
   }
-  function canPlay() { return myTurn() && ui.state.phase === 'play' && !ui.pending; }
+  function canPlay() { return myTurn() && ui.state.phase === 'play' && !ui.pending && !ui.reveal; }
   function currentCard() { return myHand().find(function(card) { return card && card.id === ui.selected; }); }
   function art(type) {
     var meta = TYPES[type] || TYPES.back;
@@ -53,8 +53,9 @@
   }
 
   function init(container) {
+    if (ui) { cancelDrawReveal(); clearTimeout(ui.highlightTimer); }
     ui = { root: container, state: null, self: 0, selected: null, target: null, pending: false,
-      handSignature: '', lastSeq: -1, events: [] };
+      handSignature: '', lastSeq: -1, events: [], snapshot: null, reveal: null, justDrawn: null };
     container.innerHTML = '<section class="ek-table" id="ekTable" aria-label="Exploding Kittens">' +
       '<header class="ek-table-header"><div><p class="ek-eyebrow">' + esc(t('ek_table_kicker')) + '</p><h1>Exploding <span>Kittens</span><i aria-hidden="true">✹</i></h1></div>' +
       '<div class="ek-table-tools"><button type="button" class="ek-text-button" id="ekRules">' + esc(t('view_rules')) + ' <span aria-hidden="true">↗</span></button><button type="button" class="ek-reset-button" id="ekRestart" aria-label="' + esc(t('restart')) + '" title="' + esc(t('restart')) + '">↻</button></div></header>' +
@@ -73,7 +74,11 @@
       '<details class="ek-history"><summary>' + esc(t('ek_history')) + '</summary><ol id="ekHistory"></ol></details>' +
       '<dialog class="ek-dialog" id="ekDetail" aria-labelledby="ekDetailTitle"><button type="button" class="ek-close" id="ekClose" aria-label="' + esc(t('ek_close')) + '">×</button>' +
         '<div class="ek-detail-layout"><div class="ek-detail-art" id="ekDetailArt"></div><div class="ek-detail-copy"><p class="ek-eyebrow" id="ekDetailKind"></p><h2 id="ekDetailTitle"></h2><p id="ekDetailDescription"></p>' +
-        '<div id="ekTargets"></div><p class="ek-detail-note" id="ekDetailNote" role="status"></p><button type="button" class="ek-primary" id="ekPlayBtn"></button></div></div></dialog></section>';
+        '<div id="ekTargets"></div><p class="ek-detail-note" id="ekDetailNote" role="status"></p><button type="button" class="ek-primary" id="ekPlayBtn"></button></div></div></dialog>' +
+      '<dialog class="ek-draw-reveal" id="ekDrawReveal" tabindex="-1" aria-labelledby="ekRevealName" aria-describedby="ekRevealNote">' +
+        '<p class="ek-reveal-label" id="ekRevealLabel"></p><div class="ek-reveal-motion" id="ekRevealMotion"><div class="ek-reveal-flipper" id="ekRevealFlipper">' +
+          '<div class="ek-reveal-back"><div class="ek-reveal-back-inner">' + art('back') + '<strong>BOOM CLUB</strong></div></div><div class="ek-reveal-front" id="ekRevealFace"></div></div></div>' +
+        '<div class="ek-reveal-caption"><h2 id="ekRevealName"></h2><p id="ekRevealNote"></p><button type="button" class="ek-primary" id="ekRevealContinue"></button></div></dialog></section>';
     node('ekRules').addEventListener('click', function() { window.showGameTutorial('exploding-kittens'); });
     node('ekRestart').addEventListener('click', function() { if (window.doRestart) window.doRestart(); });
     node('ekClose').addEventListener('click', closeDetail);
@@ -82,6 +87,9 @@
     node('ekPlayBtn').addEventListener('click', playSelected);
     node('ekDrawBtn').addEventListener('click', draw);
     node('ekDrawPile').addEventListener('click', draw);
+    node('ekRevealContinue').addEventListener('click', finishDrawReveal);
+    node('ekDrawReveal').addEventListener('cancel', function(event) { event.preventDefault(); finishDrawReveal(); });
+    node('ekDrawReveal').addEventListener('click', function(event) { if (event.target === this) finishDrawReveal(); });
     node('ekDiscard').addEventListener('click', function() {
       var pile = ui.state.discard || [];
       if (!pile.length) return;
@@ -97,13 +105,19 @@
 
   function render(state, container, playerIndex) {
     if (!state || !state.hands || !state.hands.length || !ui) return;
-    if (ui.state && ui.state.actionSeq > 0 && state.actionSeq === 0) {
+    if (ui.snapshot && ui.snapshot.seq > 0 && state.actionSeq === 0) {
+      cancelDrawReveal();
       if (node('ekDetail').open) closeDetail();
-      ui.selected = null; ui.target = null; ui.events = []; ui.lastSeq = -1;
+      ui.selected = null; ui.target = null; ui.events = []; ui.lastSeq = -1; ui.justDrawn = null;
     }
+    var newDraw = !ui.reveal && window.EKHandState.findDraw(ui.snapshot, state, playerIndex);
     ui.state = state; ui.self = playerIndex; ui.pending = false;
+    ui.snapshot = window.EKHandState.snapshot(state, playerIndex);
+    if (ui.reveal && ui.reveal.outcome === 'hand' && !myHand().some(function(card) { return card && card.id === ui.reveal.card.id; })) cancelDrawReveal();
+    if (newDraw) ui.reveal = Object.assign({ owner: ui, animations: [], finishing: false, cancelled: false }, newDraw);
     renderOpponents(); renderPiles(); renderHand(); renderFuture(); renderStatus(); renderEvent(); refreshActions();
     if (node('ekDetail').open) refreshDetail();
+    if (newDraw) startDrawReveal(ui.reveal);
   }
 
   function renderOpponents() {
@@ -128,7 +142,7 @@
   }
 
   function renderHand() {
-    var cards = myHand();
+    var cards = window.EKHandState.sortHand(myHand());
     node('ekHandCount').textContent = cards.length;
     var protectedPlayer = cards.some(function(card) { return card && card.type === 'defuse'; });
     node('ekProtection').textContent = t(protectedPlayer ? 'ek_protected' : 'ek_unprotected');
@@ -150,6 +164,13 @@
     }
     node('ekHand').classList.toggle('is-waiting', !myTurn());
     highlightHand();
+    node('ekHand').querySelectorAll('[data-card-id]').forEach(function(button) {
+      var incoming = ui.reveal && ui.reveal.outcome === 'hand' && button.dataset.cardId === ui.reveal.card.id;
+      button.classList.toggle('is-incoming', !!incoming);
+      button.classList.toggle('is-just-drawn', button.dataset.cardId === ui.justDrawn);
+      if (incoming) button.setAttribute('aria-hidden', 'true');
+      else button.removeAttribute('aria-hidden');
+    });
   }
   function highlightHand() {
     node('ekHand').querySelectorAll('[data-card-id]').forEach(function(button) {
@@ -204,7 +225,7 @@
 
   function refreshActions() {
     var mine = myTurn(), ended = ui.state.winner != null;
-    node('ekDrawBtn').disabled = !mine || ui.pending || !ui.state.deck.length;
+    node('ekDrawBtn').disabled = !mine || ui.pending || !!ui.reveal || !ui.state.deck.length;
     node('ekDrawPile').disabled = node('ekDrawBtn').disabled;
     node('ekDrawBtn').textContent = ui.pending ? t('ek_play_pending') : ended ? t('ek_round_over') : !mine ? t('ek_wait_short') : t('ek_draw_action');
     node('ekCommandTitle').textContent = ended ? t('ek_round_over') : mine ? t(ui.state.phase === 'draw' ? 'ek_draw_required' : 'ek_play_or_draw') : t('ek_inspect_title');
@@ -242,7 +263,7 @@
       ui.state.phase !== 'play' ? t('ek_draw_required') : meta.target && !valid.length ? t('ek_no_target') : meta.target && ui.target === null ? t('ek_select_target') : t('ek_confirm_hint');
   }
   function send(move) {
-    if (!myTurn() || ui.pending) return;
+    if (!myTurn() || ui.pending || ui.reveal) return;
     ui.pending = true; refreshActions();
     if (node('ekDetail').open) closeDetail();
     window.makeGameMove(move);
@@ -258,6 +279,89 @@
     send(move);
   }
   function draw() { if (myTurn() && ui.state.deck.length) send({ draw: true }); }
+
+  function activeReveal(reveal) {
+    return ui === reveal.owner && ui.reveal === reveal && !reveal.cancelled && ui.root.isConnected;
+  }
+  function cancelDrawReveal() {
+    var reveal = ui && ui.reveal;
+    if (!reveal) return;
+    reveal.cancelled = true;
+    clearTimeout(reveal.timer);
+    reveal.animations.forEach(function(animation) { animation.cancel(); });
+    if (reveal.dialog && reveal.dialog.open) reveal.dialog.close();
+    ui.reveal = null;
+  }
+  async function animateReveal(reveal, element, frames, options) {
+    var animation = element.animate(frames, options);
+    reveal.animations.push(animation);
+    await animation.finished.catch(function() {});
+    return activeReveal(reveal);
+  }
+  function travelTransform(from, to) {
+    return 'translate(' + (from.left + from.width / 2 - to.left - to.width / 2) + 'px,' +
+      (from.top + from.height / 2 - to.top - to.height / 2) + 'px) scale(' + from.width / to.width + ',' + from.height / to.height + ')';
+  }
+  async function startDrawReveal(reveal) {
+    reveal.dialog = node('ekDrawReveal');
+    reveal.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var motion = node('ekRevealMotion'), flipper = node('ekRevealFlipper');
+    node('ekRevealFace').innerHTML = face(reveal.card.type);
+    node('ekRevealLabel').textContent = t('ek_draw_reveal_label');
+    node('ekRevealName').textContent = cardName(reveal.card.type);
+    node('ekRevealNote').textContent = t('ek_draw_reveal_' + reveal.outcome);
+    node('ekRevealContinue').textContent = t(reveal.outcome === 'hand' ? 'ek_to_hand' : 'ek_reveal_continue');
+    reveal.dialog.classList.remove('is-revealed', 'is-landing');
+    reveal.dialog.dataset.outcome = reveal.outcome;
+    reveal.dialog.dataset.phase = 'lift';
+    motion.style.transform = ''; motion.style.opacity = ''; flipper.style.transform = '';
+    if (node('ekDetail').open) closeDetail();
+    reveal.dialog.showModal(); reveal.dialog.focus();
+    if (!reveal.reduced) {
+      var source = node('ekDrawPile').getBoundingClientRect(), center = motion.getBoundingClientRect();
+      if (!await animateReveal(reveal, motion, [{transform:travelTransform(source, center) + ' rotate(-5deg)'}, {transform:'none'}], {duration:320,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'}) || reveal.finishing) return;
+      reveal.dialog.dataset.phase = 'flip';
+      if (!await animateReveal(reveal, flipper, [{transform:'rotateY(0deg)'},{transform:'rotateY(180deg)'}], {duration:430,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}) || reveal.finishing) return;
+    } else flipper.style.transform = 'rotateY(180deg)';
+    if (!activeReveal(reveal) || reveal.finishing) return;
+    reveal.dialog.classList.add('is-revealed'); reveal.dialog.dataset.phase = 'face';
+    reveal.timer = setTimeout(function() { if (activeReveal(reveal)) finishDrawReveal(); }, 1600);
+  }
+  async function finishDrawReveal() {
+    var reveal = ui && ui.reveal;
+    if (!reveal || reveal.finishing || !activeReveal(reveal)) return;
+    reveal.finishing = true; clearTimeout(reveal.timer);
+    reveal.animations.forEach(function(animation) { animation.cancel(); });
+    var motion = node('ekRevealMotion'), flipper = node('ekRevealFlipper');
+    motion.style.transform = 'none'; flipper.style.transform = 'rotateY(180deg)';
+    reveal.dialog.classList.add('is-landing'); reveal.dialog.dataset.phase = 'land';
+    var destination = null;
+    if (reveal.outcome === 'hand') {
+      destination = Array.from(node('ekHand').querySelectorAll('[data-card-id]')).find(function(button) { return button.dataset.cardId === reveal.card.id; });
+      if (destination) {
+        destination.scrollIntoView({block:'nearest',inline:'center',behavior:'instant'});
+        var bottom = destination.getBoundingClientRect().bottom;
+        if (bottom > window.innerHeight - 110) window.scrollBy({top:bottom - window.innerHeight + 110,behavior:'instant'});
+      }
+    } else if (reveal.outcome === 'defuse') destination = node('ekDrawPile');
+    if (!reveal.reduced && destination) {
+      var source = motion.getBoundingClientRect(), target = destination.getBoundingClientRect();
+      if (reveal.outcome === 'defuse') flipper.style.transform = 'rotateY(0deg)';
+      if (!await animateReveal(reveal, motion, [{transform:'none',opacity:1},{transform:travelTransform(target,source),opacity:1}], {duration:360,easing:'cubic-bezier(.5,0,.8,.5)',fill:'forwards'})) return;
+    } else if (!reveal.reduced) {
+      if (!await animateReveal(reveal, motion, [{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.85)'}], {duration:240,fill:'forwards'})) return;
+    }
+    if (!activeReveal(reveal)) return;
+    var cardId = reveal.outcome === 'hand' ? reveal.card.id : null;
+    cancelDrawReveal(); ui.justDrawn = cardId; renderHand(); refreshActions();
+    if (cardId) {
+      var landed = Array.from(node('ekHand').querySelectorAll('[data-card-id]')).find(function(button) { return button.dataset.cardId === cardId; });
+      if (landed) landed.focus({preventScroll:true});
+      var owner = ui;
+      clearTimeout(ui.highlightTimer);
+      ui.highlightTimer = setTimeout(function() { if (ui === owner && owner.root.isConnected) { ui.justDrawn = null; renderHand(); } }, 2200);
+    }
+  }
 
   window.gameRenderers.set('exploding-kittens', { init: init, render: render });
 })();

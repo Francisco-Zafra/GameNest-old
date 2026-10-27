@@ -178,4 +178,26 @@
   .ek-future-slot { width: 82px; }
 }
 @media (max-width: 350px) { .ek-table-header h1 { font-size: 21px; } .ek-detail-layout { grid-template-columns: 1fr; gap: 18px; } .ek-detail-art { width: 115px; margin: 0 auto; } .ek-detail-copy h2 { font-size: 27px; } .ek-target-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-@media (prefers-reduced-motion: reduce) { .ek-table *, .ek-dialog * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+.ek-hand-card.is-incoming { visibility: hidden; pointer-events: none; }
+.ek-hand-card.is-just-drawn { outline: 3px solid #e5b64f; outline-offset: 3px; box-shadow: 0 0 24px #e5b64f80; }
+.ek-draw-reveal { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; background: transparent; color: #fff7e9; width: min(340px, calc(100vw - 32px)); max-width: none; max-height: none; overflow: visible; text-align: center; font-family: inherit; outline: none; }
+.ek-draw-reveal::backdrop { background: #17120de0; backdrop-filter: blur(5px); }
+.ek-reveal-label { font-size: 12px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 18px; }
+.ek-reveal-motion { width: min(220px, 55vw, 31dvh); aspect-ratio: 2 / 3; margin: 0 auto; perspective: 1100px; }
+.ek-reveal-flipper { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.ek-reveal-front, .ek-reveal-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 13px; box-shadow: 0 14px 50px #0007; }
+.ek-reveal-front { transform: rotateY(180deg); overflow: hidden; }
+.ek-reveal-front .ek-card-face { height: 100%; }
+.ek-reveal-front .ek-card-top { min-height: 44px; font-size: 15px; padding: 10px; }
+.ek-reveal-front .ek-art { flex: 1; min-height: 0; }
+.ek-reveal-front .ek-card-copy { min-height: 47px; font-size: 12px; padding: 8px; }
+.ek-reveal-back { box-sizing: border-box; padding: 9px; border: 2px solid #30251f; background: #fff2dc; }
+.ek-reveal-back-inner { height: 100%; display: flex; flex-direction: column; justify-content: center; border: 2px solid #c14d32; border-radius: 7px; overflow: hidden; background: #f7e6c9; }
+.ek-reveal-back .ek-art { width: 100%; aspect-ratio: 1; flex: 0 0 auto; }
+.ek-reveal-back strong { font-size: 23px; letter-spacing: .08em; color: #34231c; padding: 10px 0; }
+.ek-reveal-caption { margin-top: 21px; opacity: 0; visibility: hidden; transition: opacity .18s; }
+.ek-reveal-caption h2 { font-size: 25px; line-height: 1.1; margin: 0 0 9px; color: #fff7e9; }
+.ek-reveal-caption p { font-size: 13px; line-height: 1.5; margin: 0 auto 15px; max-width: 300px; color: #e0d3bf; }
+.ek-draw-reveal.is-revealed .ek-reveal-caption { opacity: 1; visibility: visible; }
+.ek-draw-reveal.is-landing .ek-reveal-caption, .ek-draw-reveal.is-landing .ek-reveal-label { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .ek-table *, .ek-dialog *, .ek-draw-reveal * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

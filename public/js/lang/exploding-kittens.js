@@ -2,7 +2,10 @@
   var packs = {
     en: {
       ek_table_kicker: 'THE ILLUSTRATED TABLE', ek_rivals: 'Other players', ek_table_center: 'On the table',
-      ek_survivors: '%s still standing', ek_hand_label: 'Your hand', ek_hand_hint: 'Swipe to browse. Tap a card to read it before playing.',
+      ek_survivors: '%s still standing', ek_hand_label: 'Your hand', ek_hand_hint: 'Grouped by type. Swipe to browse; tap a card to read it.',
+      ek_draw_reveal_label: 'You drew', ek_draw_reveal_hand: 'Joining your hand, next to cards of the same type.',
+      ek_draw_reveal_defuse: 'Your Defuse saved you. The kitten returns to the deck.', ek_draw_reveal_explode: 'No Defuse left. You are out of the round.',
+      ek_to_hand: 'Add to my hand', ek_reveal_continue: 'Continue',
       ek_opponent_cards: '%s cards', ek_eliminated: 'Eliminated', ek_protected: 'Defuse ready', ek_unprotected: 'No defuse', ek_current_player: 'Current turn',
       ek_draw_action: 'Draw a card', ek_end_note: 'Drawing ends one of your turns.', ek_play_or_draw: 'Play a card or take a chance',
       ek_inspect_title: 'Plan your next move', ek_inspect_hint: 'You can inspect your cards while you wait.', ek_wait_short: 'Waiting…',
@@ -33,7 +36,10 @@
     },
     es: {
       ek_table_kicker: 'LA MESA ILUSTRADA', ek_rivals: 'Otros jugadores', ek_table_center: 'En el centro',
-      ek_survivors: '%s siguen en pie', ek_hand_label: 'Tu mano', ek_hand_hint: 'Desliza para ver más. Toca una carta para leerla antes de jugar.',
+      ek_survivors: '%s siguen en pie', ek_hand_label: 'Tu mano', ek_hand_hint: 'Ordenadas por tipo. Desliza para ver más; toca una carta para leerla.',
+      ek_draw_reveal_label: 'Has robado', ek_draw_reveal_hand: 'Se incorpora a tu mano, junto a las cartas de su tipo.',
+      ek_draw_reveal_defuse: 'Tu desactivación te salva. El gatito vuelve al mazo.', ek_draw_reveal_explode: 'No tenías desactivación. Estás fuera de la partida.',
+      ek_to_hand: 'A mi mano', ek_reveal_continue: 'Continuar',
       ek_opponent_cards: '%s cartas', ek_eliminated: 'Fuera de la partida', ek_protected: 'Desactivación lista', ek_unprotected: 'Sin desactivación', ek_current_player: 'Turno actual',
       ek_draw_action: 'Robar carta', ek_end_note: 'Al robar, terminas uno de tus turnos.', ek_play_or_draw: 'Juega una carta o arriésgate',
       ek_inspect_title: 'Prepara tu próxima jugada', ek_inspect_hint: 'Puedes leer tus cartas mientras esperas.', ek_wait_short: 'Esperando…',
@@ -69,7 +75,10 @@
     },
     zh: {
       ek_table_kicker: '插画桌游', ek_rivals: '其他玩家', ek_table_center: '牌桌中央', ek_survivors: '剩余 %s 人',
-      ek_hand_label: '你的手牌', ek_hand_hint: '左右滑动查看。先点开卡牌阅读，再确认出牌。', ek_opponent_cards: '%s 张牌',
+      ek_hand_label: '你的手牌', ek_hand_hint: '按类型排列。左右滑动查看，点击阅读卡牌。', ek_opponent_cards: '%s 张牌',
+      ek_draw_reveal_label: '你抽到了', ek_draw_reveal_hand: '放入手牌，与同类型卡牌排列在一起。',
+      ek_draw_reveal_defuse: '拆弹牌救了你，爆炸猫返回牌堆。', ek_draw_reveal_explode: '没有拆弹牌，你已出局。',
+      ek_to_hand: '放入手牌', ek_reveal_continue: '继续',
       ek_eliminated: '已出局', ek_protected: '拆弹准备就绪', ek_unprotected: '没有拆弹牌', ek_draw_action: '抽一张牌', ek_current_player: '当前回合',
       ek_end_note: '抽牌会结束你的一个回合。', ek_play_or_draw: '出一张牌，或冒险抽牌', ek_inspect_title: '准备下一步',
       ek_inspect_hint: '等待时也可以查看手牌说明。', ek_wait_short: '等待中…', ek_waiting_named: '轮到 %s',
