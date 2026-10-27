@@ -28,5 +28,10 @@ module.exports = Object.assign({}, require('./server-en'), {
   uno_card_not_in_hand: 'Esa carta no está en tu mano',
   uno_must_draw_or_play: 'Debes robar o acumular un +2 o +4',
   uno_cannot_play_card: 'No puedes jugar esa carta',
-  uno_no_challenge_pending: 'No hay ningún +4 que desafiar'
+  uno_no_challenge_pending: 'No hay ningún +4 que desafiar',
+  ek_you_are_out: 'Estás fuera de la partida',
+  ek_deck_empty: 'El mazo está vacío',
+  ek_card_not_in_hand: 'Esa carta no está en tu mano',
+  ek_must_target_player: 'Debes elegir un jugador',
+  ek_target_out: 'Ese jugador está eliminado'
 });

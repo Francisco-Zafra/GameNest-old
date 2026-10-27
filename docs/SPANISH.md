@@ -8,6 +8,7 @@ Esta rama añade español como tercer idioma, conservando inglés y chino.
 - Navegación, búsqueda, creación de salas, asientos, botones y estados compartidos.
 - Ajustes comunes y mensajes de error generales del servidor.
 - UNO: interfaz, colores, avisos, errores y reglas de esta implementación.
+- Exploding Kittens: mesa ilustrada, cartas con sus efectos, selección de objetivos, mensajes y reglas de esta variante.
 
 El selector de idioma está en el catálogo y en la cabecera de las salas. La elección se guarda en el navegador. Si no hay una elección guardada, los navegadores configurados en español lo seleccionan automáticamente.
 

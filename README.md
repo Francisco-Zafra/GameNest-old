@@ -1,6 +1,6 @@
 # GameNest
 
-> This personal fork adds a Spanish interface and UNO translation while preserving English and Chinese. See [Spanish coverage and updates](docs/SPANISH.md) for the current scope.
+> This personal fork adds a Spanish interface, UNO translation, and an original illustrated Exploding Kittens table while preserving English and Chinese. See [Spanish coverage and updates](docs/SPANISH.md) for the current scope.
 
 > 34 LAN games you can play with friends without internet: board, card, mahjong, party, puzzle, and real-time. One phone or PC hosts (a hotspot is enough), everyone else scans a QR code and plays in the browser. No data plan, no app install.
 

@@ -14,7 +14,7 @@ function browser(saved, locale = 'es-ES') {
     document: { documentElement: {}, querySelectorAll: () => [] }
   };
   vm.createContext(context);
-  for (const file of ['public/js/lang/zh.js', 'public/js/lang/en.js', 'public/js/lang/es.js', 'public/js/lang/catalog-zh.js', 'public/js/lang/catalog-en.js', 'public/js/lang/catalog-es.js', 'public/js/game-catalog.js']) {
+  for (const file of ['public/js/lang/zh.js', 'public/js/lang/en.js', 'public/js/lang/es.js', 'public/js/lang/exploding-kittens.js', 'public/js/lang/catalog-zh.js', 'public/js/lang/catalog-en.js', 'public/js/lang/catalog-es.js', 'public/js/game-catalog.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
   }
   context.storage = storage;
