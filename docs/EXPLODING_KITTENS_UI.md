@@ -11,6 +11,7 @@ La mesa conserva las acciones de cartas de la variante y añade una fase de devo
 - Una reconexión durante esa elección restaura el selector. Los bots también colocan las bombas, incluso sin cartas en la mano. Si se abandona la sala y el servidor salta el asiento tras su plazo de reconexión, devuelve el gatito al azar para evitar bloquear la partida.
 - Tocar una carta abre su efecto; la carta solo se juega tras confirmar.
 - Ataque, Favor y Robo muestran los rivales válidos. Los jugadores eliminados o sin cartas no se pueden elegir para robar.
+- Favor y Robo permiten seguir jugando: se pueden encadenar varias cartas de esos tipos e incluso jugar una carta recién conseguida. Solo robar del mazo, Pasar o Ataque resuelven el turno correspondiente; conseguir una carta de un rival no lo consume.
 - Desactivar se identifica como protección automática y no se puede malgastar mediante el botón de jugar.
 - Robar está disponible tanto en el mazo como en el botón principal. Mientras llega la respuesta se bloquean envíos duplicados.
 - Las cartas del futuro se muestran en orden de robo y solo al jugador que las ha visto.

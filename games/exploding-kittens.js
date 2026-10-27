@@ -286,7 +286,7 @@ exports.handleMove = (data, state, playerIndex) => {
               state.lastSteal = { stealer: playerIndex, victim: targetPlayer, cardType: stolen.type };
             }
           }
-          state.phase = 'draw';
+          // Taking a card does not consume the turn; more actions may follow.
           return null;
 
         case 'steal':
@@ -305,7 +305,7 @@ exports.handleMove = (data, state, playerIndex) => {
               state.lastSteal = { stealer: playerIndex, victim: targetPlayer, cardType: stolen.type };
             }
           }
-          state.phase = 'draw';
+          // Taking a card does not consume the turn; more actions may follow.
           return null;
 
         default:
